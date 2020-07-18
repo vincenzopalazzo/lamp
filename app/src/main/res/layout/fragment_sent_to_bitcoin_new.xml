@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/header_dialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="15dp"
+        android:background="@color/colorPrimary">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:textSize="18dp"
+            android:textColor="@android:color/white"
+            android:text="Withdraw your bitcoin"
+            />
+
+    </LinearLayout>
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/edit_text_amount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/header_dialog"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp"
+        android:padding="15dp"
+        android:lines="1"
+        android:inputType="text"
+        android:hint="Amount in Satoshi"
+        />
+
+    <!-- component to choose the unit of bitcoin or satoshi fot lightning network -->
+
+    <TextView
+        android:id="@+id/label_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/edit_text_amount"
+        android:padding="15dp"
+        android:text="ERRORS"
+        android:textColor="@android:color/holo_red_light"
+        />
+
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/check_send_all"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/edit_text_amount"
+        android:layout_toEndOf="@+id/edit_text_amount"
+        android:layout_toRightOf="@+id/edit_text_amount"
+        android:text="Send all" />
+
+    <TextView
+        android:id="@+id/address_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/label_error"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="To Address"
+        android:textStyle="bold"
+        android:textSize="18dp"
+        />
+    
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/textview_address_btc"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/address_title"
+        android:inputType="textMultiLine"
+        android:hint="Bitcoin address"
+        android:textIsSelectable="true"
+        android:editable="false"/>
+
+    <ImageView
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_below="@+id/address_title"
+        android:layout_toRightOf="@+id/textview_address_btc"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="10dp"
+        app:srcCompat="@drawable/ic_register" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_send_bitcoin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/textview_address_btc"
+        android:background="@color/colorPrimary"
+        android:drawableRight="@drawable/ic_baseline_send_24"
+        android:padding="10dp"
+        android:layout_margin="20dp"
+        android:text="SEND"
+        android:textColor="@android:color/white"/>
+
+
+
+</RelativeLayout>

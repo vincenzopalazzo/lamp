@@ -23,7 +23,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.preference.PreferenceManager
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.google.zxing.WriterException
@@ -33,20 +32,18 @@ import com.lvaccaro.lamp.Channels.ChannelsActivity
 import com.lvaccaro.lamp.Channels.FundChannelFragment
 import com.lvaccaro.lamp.Services.LightningService
 import com.lvaccaro.lamp.Services.TorService
+import com.lvaccaro.lamp.WithDraw.WithDraw
 import com.lvaccaro.lamp.ui.send.SentToBitcoinFragment
 import com.lvaccaro.lamp.util.LampKeys
 import com.lvaccaro.lamp.util.Validator
+import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.startActivity
 import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.Exception
-import java.math.BigDecimal
-import java.math.BigInteger
-import java.util.*
 import java.util.logging.Logger
-import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
-import kotlin.math.roundToLong
 
 
 class MainActivity : AppCompatActivity() {
@@ -658,14 +655,20 @@ class MainActivity : AppCompatActivity() {
            // amount = result[LampKeys.AMOUNT_KEY]!!
         }
 
-        val sentToBitcoinDialog = SentToBitcoinFragment()
+        /*val sentToBitcoinDialog = SentToBitcoinFragment()
         val bundle = Bundle()
         bundle.putString("address", address)
         bundle.putString("amount", amount)
         sentToBitcoinDialog.arguments = bundle
+
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.add(sentToBitcoinDialog, "SentToBitcoinFragment")
-        fragmentTransaction.commitAllowingStateLoss()
+        fragmentTransaction.setBreadCrumbTitle("Withdraw your bitcoin at")
+        fragmentTransaction.setTransitionStyle(R.style.LampDialogThemeLight)
+        fragmentTransaction.commitAllowingStateLoss*/
+        
+        val intent = Intent(this, WithDraw::class.java)
+        startActivity(intent)
     }
 
     private fun isBitcoinPayment(text: String): Map<String, String> {

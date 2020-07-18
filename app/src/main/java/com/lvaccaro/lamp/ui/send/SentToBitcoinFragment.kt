@@ -42,7 +42,9 @@ class SentToBitcoinFragment : DialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_sent_to_bitcoin, container, false)
+        dialog?.setTitle("Withdraw your bitcoin");
+
+        return inflater.inflate(R.layout.fragment_sent_to_bitcoin_new, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
