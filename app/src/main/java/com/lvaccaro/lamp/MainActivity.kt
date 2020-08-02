@@ -238,7 +238,7 @@ class MainActivity : UriResultActivity() {
             }
             R.id.action_invoice -> {
                 val bottomSheetDialog = InvoiceBuildFragment()
-                bottomSheetDialog.show(getSupportFragmentManager(), "Custom Bottom Sheet")
+                bottomSheetDialog.show(supportFragmentManager, "Custom Bottom Sheet")
                 true
             }
             R.id.action_channels -> {
@@ -286,7 +286,7 @@ class MainActivity : UriResultActivity() {
     private fun isServiceRunning(name: String): Boolean {
         val manager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
         for (service in manager.getRunningServices(Int.MAX_VALUE)) {
-            if (name.equals(service.service.getClassName())) {
+            if (name.equals(service.service.className)) {
                 return true
             }
         }
@@ -429,9 +429,9 @@ class MainActivity : UriResultActivity() {
     private fun getQrCode(text: String): Bitmap {
         val SCALE = 16
         try {
-            val matrix = Encoder.encode(text, ErrorCorrectionLevel.M).getMatrix()
-            val height = matrix.getHeight() * SCALE
-            val width = matrix.getWidth() * SCALE
+            val matrix = Encoder.encode(text, ErrorCorrectionLevel.M).matrix
+            val height = matrix.height * SCALE
+            val width = matrix.width * SCALE
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             for (x in 0 until width)
                 for (y in 0 until height) {
@@ -457,7 +457,7 @@ class MainActivity : UriResultActivity() {
             val tarFile = File(dir(), tarFilename())
             doAsync {
                 uncompress(tarFile, rootDir())
-                tarFile.delete();
+                tarFile.delete()
                 runOnUiThread { powerOff() }
             }
         }
@@ -534,7 +534,7 @@ class MainActivity : UriResultActivity() {
             }
             Thread.sleep(2000)
         }
-        return false;
+        return false
     }
 
     private fun waitLightningBootstrap(): Boolean {
@@ -548,7 +548,7 @@ class MainActivity : UriResultActivity() {
             }
             Thread.sleep(2000)
         }
-        return false;
+        return false
     }
 
     private fun start() {
@@ -666,20 +666,12 @@ class MainActivity : UriResultActivity() {
             val res = LightningCli().exec(this, arrayOf("stop"))
             log.info("---" + res.toString() + "---")
         } catch (e: Exception) {
-            Snackbar.make(
-                findViewById(android.R.id.content),
-                "Error: ${e.localizedMessage}",
-                Snackbar.LENGTH_LONG)
-                .setBackgroundTint(Color.RED)
-                .show()
-            log.info(e.localizedMessage)
+            showSnackBar("Error: ${e.localizedMessage}", Snackbar.LENGTH_LONG)
+            log.warning(e.localizedMessage)
             e.printStackTrace()
         }
-        runOnUiThread {
-            stopLightningService()
-            stopTorService()
-            powerOff()
-        }
+        stopLightningService()
+        stopTorService()
     }
 
     private fun generateNewAddress() {
@@ -692,7 +684,7 @@ class MainActivity : UriResultActivity() {
             val textView = TextView(this)
             val qr = ImageView(this)
             val address = res["address"].toString()
-            textView.setText(address)
+            textView.text = address
             qr.setImageBitmap(getQrCode(address))
             val layoutParams = LinearLayout.LayoutParams(300, 300)
             layoutParams.gravity = Gravity.CENTER_HORIZONTAL
@@ -720,7 +712,7 @@ class MainActivity : UriResultActivity() {
     private fun copyToClipboard(key: String, text: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip: ClipData = ClipData.newPlainText(key, text)
-        clipboard.setPrimaryClip(clip)
+        clipboard.primaryClip = clip
         Toast.makeText(this, "Copied to clipboard", Toast.LENGTH_LONG).show()
     }
 
