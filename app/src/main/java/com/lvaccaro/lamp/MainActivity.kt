@@ -67,7 +67,7 @@ class MainActivity : UriResultActivity() {
     private lateinit var notificationReceiver: NotificationReceiver
 
     companion object {
-        val RELEASE = "release_clightning_0.8.2"
+        val RELEASE = "release_clightning_0.9.0"
 
         fun arch(): String {
             var abi: String?
