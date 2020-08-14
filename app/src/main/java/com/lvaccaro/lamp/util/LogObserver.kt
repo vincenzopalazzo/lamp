@@ -8,6 +8,7 @@ import com.lvaccaro.lamp.util.hendler.NewChannelPayment
 import com.lvaccaro.lamp.util.hendler.ShutdownNode
 import java.io.File
 import java.io.LineNumberReader
+import kotlin.concurrent.thread
 
 /**
  * This class is an implementation of FileObserver discussed inside the PRs XX
@@ -37,14 +38,15 @@ import java.io.LineNumberReader
  *
  * @author https://github.com/vincenzopalazzo
  */
-class LogObserver(val context: Context, val path: String, val nameFile: String) : FileObserver(path) {
+class LogObserver(val context: Context, val path: String, val nameFile: String) :
+    FileObserver(path) {
 
     init {
         initHandler()
     }
 
     companion object {
-        val TAG = LogObserver::class.java.canonicalName
+        private val TAG = LogObserver::class.java.canonicalName
     }
 
     private lateinit var actionHandler: ArrayList<IEventHandler>
@@ -60,7 +62,7 @@ class LogObserver(val context: Context, val path: String, val nameFile: String) 
     }
 
     override fun onEvent(event: Int, file: String?) {
-        if(file == null) return
+        if (file == null) return
         if (file?.equals(nameFile)) {
             when (event) {
                 FileObserver.MODIFY -> readNewLines()
@@ -69,14 +71,14 @@ class LogObserver(val context: Context, val path: String, val nameFile: String) 
     }
 
     private fun readNewLines() {
-        if(lineNumberReader == null)
+        if (lineNumberReader == null)
             initFileLog()
 
         //FIXME(vicenzopalazzo): This is real util?
-        if(lineNumberReader == null) return
+        if (lineNumberReader == null) return
         lineNumberReader?.lineNumber = actualLine
         var line: String? = lineNumberReader?.readLine()
-        while (line != null){
+        while (line != null) {
             readLogLine(line)
             Log.d(TAG, line)
             line = lineNumberReader?.readLine()

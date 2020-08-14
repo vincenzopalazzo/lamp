@@ -30,6 +30,7 @@ import com.google.zxing.qrcode.encoder.Encoder
 import com.lvaccaro.lamp.Channels.ChannelsActivity
 import com.lvaccaro.lamp.Services.LightningService
 import com.lvaccaro.lamp.Services.TorService
+import com.lvaccaro.lamp.logview.LogActivity
 import org.jetbrains.anko.contentView
 import org.jetbrains.anko.doAsync
 import org.json.JSONArray

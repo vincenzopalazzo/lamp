@@ -1,4 +1,4 @@
-package com.lvaccaro.lamp
+package com.lvaccaro.lamp.logview
 
 import android.os.AsyncTask
 import android.os.Bundle
@@ -9,10 +9,15 @@ import android.view.MenuItem
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import com.lvaccaro.lamp.R
+import com.lvaccaro.lamp.rootDir
 
 import kotlinx.android.synthetic.main.activity_log.*
-import java.io.File
-import java.io.LineNumberReader
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.onComplete
+import java.io.*
 import java.util.stream.Collectors
 
 class LogActivity : AppCompatActivity() {
@@ -22,17 +27,32 @@ class LogActivity : AppCompatActivity() {
     }
 
     private var daemon = "lightningd"
+    private lateinit var logViewModel: LogViewModel
+    private lateinit var editText: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_log)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        editText = findViewById(R.id.editText)
+        editText.movementMethod = ScrollingMovementMethod()
+        editText.isVerticalScrollBarEnabled = true
+
+
+        logViewModel = ViewModelProvider(this).get(LogViewModel::class.java)
+        logViewModel.lastResult.observe(this, Observer<String> { lastResult ->
+            run {
+                editText.append(lastResult)
+            }
+        })
+
+        logViewModel.launchReadLog(rootDir().path.plus("/$daemon.log"))
     }
 
     override fun onResume() {
         super.onResume()
-        readLog()
+//        readLog()
     }
 
 
@@ -45,12 +65,12 @@ class LogActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_lightning -> {
                 daemon = "lightningd"
-                readLog()
+  //              readLog()
                 true
             }
             R.id.action_tor -> {
                 daemon = "tor"
-                readLog()
+    //            readLog()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -59,30 +79,39 @@ class LogActivity : AppCompatActivity() {
 
     fun readLog() {
         title = "Log $daemon"
-
         val logFile = File(rootDir(), "$daemon.log")
-        Log.d(TAG, "File log: ${logFile.absolutePath}")
-        Log.d(TAG, "File dim: ${logFile.length()} Mb")
-        Log.d(TAG, "------------------------------------------")
-        Log.d(TAG, logFile.readText())
         if (!logFile.exists()) {
             Toast.makeText(this, "No log file found", Toast.LENGTH_LONG).show()
             return
         }
-        val et = findViewById<EditText>(R.id.editText)
-        et.movementMethod = ScrollingMovementMethod()
-        et.isVerticalScrollBarEnabled = true
-        et.setText("Waiting log")
 
+        editText.setText("Waiting log")
+
+        doAsync {
+            val stream = LineNumberReader(logFile.reader())
+            stream.forEachLine {
+                runOnUiThread {
+                    editText.append(it)
+                }
+            }
+
+            onComplete {
+                showToastMessage("Log loaded")
+            }
+        }
+
+        /*
         val loadLogTask = LoadLogTask(this, et)
         loadLogTask.execute(logFile)
+        */
     }
 
-    fun showToastMessage(message: String, duration: Int = Toast.LENGTH_LONG){
+    fun showToastMessage(message: String, duration: Int = Toast.LENGTH_LONG) {
         Toast.makeText(this, message, duration).show()
     }
 
-    private class LoadLogTask(val activity: LogActivity, val editText: EditText): AsyncTask<File, String, String>() {
+    private class LoadLogTask(val activity: LogActivity, val editText: EditText) :
+        AsyncTask<File, String, String>() {
 
         override fun doInBackground(vararg params: File?): String? {
             var text: String
