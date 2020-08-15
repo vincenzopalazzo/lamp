@@ -1,24 +1,19 @@
 package com.lvaccaro.lamp.logview
 
-import android.os.AsyncTask
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.lvaccaro.lamp.R
 import com.lvaccaro.lamp.rootDir
 
 import kotlinx.android.synthetic.main.activity_log.*
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.onComplete
-import java.io.*
-import java.util.stream.Collectors
 
 class LogActivity : AppCompatActivity() {
 
@@ -26,7 +21,6 @@ class LogActivity : AppCompatActivity() {
         val TAG = LogActivity::class.java.canonicalName
     }
 
-    private var daemon = "lightningd"
     private lateinit var logViewModel: LogViewModel
     private lateinit var editText: EditText
 
@@ -47,14 +41,16 @@ class LogActivity : AppCompatActivity() {
             }
         })
 
-        logViewModel.launchReadLog(rootDir().path.plus("/$daemon.log"))
+        logViewModel.daemon.observe(this, Observer<String> { update ->
+            run {
+                editText.setText("")
+                logViewModel.launchReadLog(rootDir())
+            }
+        })
+        //this mean that the
+        if(savedInstanceState == null)
+            logViewModel.launchReadLog(rootDir())
     }
-
-    override fun onResume() {
-        super.onResume()
-//        readLog()
-    }
-
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_log, menu)
@@ -64,81 +60,20 @@ class LogActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_lightning -> {
-                daemon = "lightningd"
-  //              readLog()
+                showToastMessage("C-lightning log are loading")
+                logViewModel.setLogDaemon("lightningd")
                 true
             }
             R.id.action_tor -> {
-                daemon = "tor"
-    //            readLog()
+                showToastMessage("Tor log are loading")
+                logViewModel.setLogDaemon("tor")
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
-    fun readLog() {
-        title = "Log $daemon"
-        val logFile = File(rootDir(), "$daemon.log")
-        if (!logFile.exists()) {
-            Toast.makeText(this, "No log file found", Toast.LENGTH_LONG).show()
-            return
-        }
-
-        editText.setText("Waiting log")
-
-        doAsync {
-            val stream = LineNumberReader(logFile.reader())
-            stream.forEachLine {
-                runOnUiThread {
-                    editText.append(it)
-                }
-            }
-
-            onComplete {
-                showToastMessage("Log loaded")
-            }
-        }
-
-        /*
-        val loadLogTask = LoadLogTask(this, et)
-        loadLogTask.execute(logFile)
-        */
-    }
-
     fun showToastMessage(message: String, duration: Int = Toast.LENGTH_LONG) {
         Toast.makeText(this, message, duration).show()
-    }
-
-    private class LoadLogTask(val activity: LogActivity, val editText: EditText) :
-        AsyncTask<File, String, String>() {
-
-        override fun doInBackground(vararg params: File?): String? {
-            var text: String
-            var logReader = LineNumberReader(params[0]?.reader())
-            var lines: List<String> = logReader.lines().collect(Collectors.toList())
-            text = readBuffer(lines)
-            return text
-        }
-
-        override fun onPreExecute() {
-            super.onPreExecute()
-            activity.showToastMessage("Loading log")
-        }
-
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-            editText.setText(result)
-            activity.showToastMessage("Log ready")
-        }
-
-        fun readBuffer(lines: List<String>): String {
-            val sb = StringBuilder()
-            val linesIt = lines.iterator()
-            while (linesIt.hasNext()) {
-                sb.append(linesIt.next())
-            }
-            return sb.toString()
-        }
     }
 }

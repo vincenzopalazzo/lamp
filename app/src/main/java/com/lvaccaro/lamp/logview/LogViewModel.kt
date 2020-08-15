@@ -9,10 +9,10 @@ import java.io.LineNumberReader
 
 class LogViewModel : ViewModel() {
 
-
     private lateinit var logObserver: FileLogObserver
     private lateinit var logReader: LineNumberReader
     var lastResult = MutableLiveData<String>()
+    internal var daemon = MutableLiveData<String>("lightningd")
     //TODO(vincenzopalazzo): Store this data, it is very important for
     //restore the file line when the activity will be destroy
     private var actualLine = 0
@@ -41,8 +41,8 @@ class LogViewModel : ViewModel() {
     /**
      * Heavy operation that cannot be done in the Main Thread
      */
-    fun launchReadLog(path: String) {
-        val file = File(path)
+    fun launchReadLog(path: File) {
+        val file = File(path, "${daemon.value}.log")
         if (!file.exists()) {
             lastResult.value = "Log file not found"
             return
@@ -56,19 +56,17 @@ class LogViewModel : ViewModel() {
         onUIScope()
     }
 
-    protected fun onUIScope(){
+    private fun onUIScope(){
         uiScope.launch {
             logReader.lineNumber = actualLine
             readLog()
         }
     }
 
-
-
     private suspend fun readLog() {
         withContext(Dispatchers.IO) {
             while (readByStep()) {
-                delay(100)
+                delay(50)
             }
         }
     }
@@ -76,7 +74,7 @@ class LogViewModel : ViewModel() {
     private fun readByStep(): Boolean {
         val line: String = logReader.readLine() ?: return false
         viewModelScope.launch {
-            // with log level to IO, explora generate a lot of log like hex string
+            // with log level to IO, esplora generate a lot of log like hex string
             //This don't have send for the user, and also we need to resolve this
             if(line.length > 700) return@launch
             lastResult.value = line.plus("\n")
@@ -85,7 +83,11 @@ class LogViewModel : ViewModel() {
         return true
     }
 
-    class FileLogObserver(val logFile: File, var viewModel: LogViewModel): FileObserver(logFile.path){
+    fun setLogDaemon(nameDaemon: String){
+        this.daemon.value = nameDaemon
+    }
+
+    class FileLogObserver(val logFile: File, val viewModel: LogViewModel): FileObserver(logFile.path){
         override fun onEvent(event: Int, path: String?) {
             if (path == null) return
             if (path?.equals(logFile.name)) {
@@ -94,11 +96,8 @@ class LogViewModel : ViewModel() {
                 }
             }
         }
-
         private fun seeChange() {
             viewModel.onUIScope()
         }
-
-
     }
 }
