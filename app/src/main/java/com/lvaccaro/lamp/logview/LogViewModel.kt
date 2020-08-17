@@ -9,6 +9,10 @@ import java.io.LineNumberReader
 
 class LogViewModel : ViewModel() {
 
+    companion object{
+        val TAG = LogViewModel::class.java.canonicalName
+    }
+
     private lateinit var logObserver: FileLogObserver
     private lateinit var logReader: LineNumberReader
     var lastResult = MutableLiveData<String>()
@@ -16,6 +20,7 @@ class LogViewModel : ViewModel() {
     //TODO(vincenzopalazzo): Store this data, it is very important for
     //restore the file line when the activity will be destroy
     private var actualLine = 0
+    private var dimensionFile = 0;
 
     /**
      * This is the job for all coroutines started by this ViewModel.
@@ -65,13 +70,23 @@ class LogViewModel : ViewModel() {
 
     private suspend fun readLog() {
         withContext(Dispatchers.IO) {
+            dimensionFile = countLineInFile()
+            logReader.lineNumber = dimensionFile - 200
             while (readByStep()) {
                 delay(50)
             }
         }
     }
 
+    private fun countLineInFile(): Int {
+        if(dimensionFile == 0){
+            logReader.forEachLine { dimensionFile++}
+        }
+        return dimensionFile
+    }
+
     private fun readByStep(): Boolean {
+        Log.d(TAG, "Logged start to read at line ${logReader.lineNumber}")
         val line: String = logReader.readLine() ?: return false
         viewModelScope.launch {
             // with log level to IO, esplora generate a lot of log like hex string
