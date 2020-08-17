@@ -8,7 +8,6 @@ import com.lvaccaro.lamp.util.hendler.NewChannelPayment
 import com.lvaccaro.lamp.util.hendler.ShutdownNode
 import java.io.File
 import java.io.LineNumberReader
-import kotlin.concurrent.thread
 
 /**
  * This class is an implementation of FileObserver discussed inside the PRs XX
@@ -54,7 +53,6 @@ class LogObserver(val context: Context, val path: String, val nameFile: String) 
     private var actualLine = 0
     private var lineNumberReader: LineNumberReader? = null
 
-
     fun initHandler() {
         actionHandler = ArrayList<IEventHandler>()
         actionHandler.add(NewChannelPayment(LampKeys.NODE_NOTIFICATION_FUNDCHANNEL))
@@ -86,7 +84,7 @@ class LogObserver(val context: Context, val path: String, val nameFile: String) 
     }
 
     private fun readLogLine(line: String) {
-        actionHandler.forEach { it -> it.doReceive(context, line) }
+        actionHandler.forEach { it.doReceive(context, line) }
         actualLine++
     }
 

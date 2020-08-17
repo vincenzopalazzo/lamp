@@ -133,7 +133,7 @@ class LightningService : IntentService("LightningService") {
         log.info("exit $daemon service")
 
         startForeground()
-        logObserver.startWatching();
+        logObserver.startWatching()
         return Service.START_STICKY
     }
 
@@ -174,7 +174,7 @@ class LightningService : IntentService("LightningService") {
         globber?.interrupt()
         process = null
         globber = null
-        logObserver.startWatching()
+        logObserver.stopWatching()
         cancelNotification()
     }
 }

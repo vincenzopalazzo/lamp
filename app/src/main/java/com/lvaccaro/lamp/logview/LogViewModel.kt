@@ -5,22 +5,26 @@ import android.util.Log
 import androidx.lifecycle.*
 import kotlinx.coroutines.*
 import java.io.File
+import java.io.InputStream
 import java.io.LineNumberReader
 
+/**
+ * @author https://github.com/vincenzopalazzo
+ */
 class LogViewModel : ViewModel() {
 
-    companion object{
+    companion object {
         val TAG = LogViewModel::class.java.canonicalName
     }
 
     private lateinit var logObserver: FileLogObserver
     private lateinit var logReader: LineNumberReader
+    private lateinit var bufferedReader: InputStream
     var lastResult = MutableLiveData<String>()
     internal var daemon = MutableLiveData<String>("lightningd")
     //TODO(vincenzopalazzo): Store this data, it is very important for
     //restore the file line when the activity will be destroy
     private var actualLine = 0
-    private var dimensionFile = 0;
 
     /**
      * This is the job for all coroutines started by this ViewModel.
@@ -40,6 +44,7 @@ class LogViewModel : ViewModel() {
      */
     override fun onCleared() {
         super.onCleared()
+        logObserver.stopWatching()
         viewModelJob.cancel()
     }
 
@@ -52,65 +57,59 @@ class LogViewModel : ViewModel() {
             lastResult.value = "Log file not found"
             return
         }
-        logObserver = FileLogObserver(file, this)
+        logObserver = FileLogObserver(path, "${daemon.value}.log", this)
+        logObserver.startWatching()
         logReader = LineNumberReader(file.reader())
         Log.d(LogActivity.TAG, "------------------------------------------")
         Log.d(LogActivity.TAG, "File log: ${file.absolutePath}")
         Log.d(LogActivity.TAG, "File dim: ${file.length() / 1048576} Mb")
         Log.d(LogActivity.TAG, "------------------------------------------")
-        onUIScope()
+        this.onUIScope()
     }
 
-    private fun onUIScope(){
+    private fun onUIScope() {
         uiScope.launch {
             logReader.lineNumber = actualLine
+            Log.d(TAG, "Start to read from line ${logReader.lineNumber}")
             readLog()
         }
     }
 
     private suspend fun readLog() {
         withContext(Dispatchers.IO) {
-            dimensionFile = countLineInFile()
-            logReader.lineNumber = dimensionFile - 200
             while (readByStep()) {
                 delay(50)
             }
         }
     }
 
-    private fun countLineInFile(): Int {
-        if(dimensionFile == 0){
-            logReader.forEachLine { dimensionFile++}
-        }
-        return dimensionFile
-    }
-
     private fun readByStep(): Boolean {
-        Log.d(TAG, "Logged start to read at line ${logReader.lineNumber}")
         val line: String = logReader.readLine() ?: return false
         viewModelScope.launch {
             // with log level to IO, esplora generate a lot of log like hex string
             //This don't have send for the user, and also we need to resolve this
-            if(line.length > 700) return@launch
+            if (line.length > 700) return@launch
             lastResult.value = line.plus("\n")
         }
         actualLine++
         return true
     }
 
-    fun setLogDaemon(nameDaemon: String){
+    fun setLogDaemon(nameDaemon: String) {
         this.daemon.value = nameDaemon
     }
 
-    class FileLogObserver(val logFile: File, val viewModel: LogViewModel): FileObserver(logFile.path){
+    class FileLogObserver(root: File, val nameFile: String, val viewModel: LogViewModel) :
+        FileObserver(root.absolutePath) {
         override fun onEvent(event: Int, path: String?) {
             if (path == null) return
-            if (path?.equals(logFile.name)) {
+            if (path?.equals(nameFile)) {
                 when (event) {
-                    FileObserver.MODIFY -> seeChange()
+                    MODIFY -> seeChange()
                 }
             }
         }
+
         private fun seeChange() {
             viewModel.onUIScope()
         }
