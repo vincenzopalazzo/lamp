@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.SavedStateViewModelFactory
 import androidx.lifecycle.ViewModelProvider
 import com.lvaccaro.lamp.R
 import com.lvaccaro.lamp.rootDir
@@ -34,7 +35,8 @@ class LogActivity : AppCompatActivity() {
         editText.isVerticalScrollBarEnabled = true
 
 
-        logViewModel = ViewModelProvider(this).get(LogViewModel::class.java)
+        logViewModel = ViewModelProvider(this,
+            SavedStateViewModelFactory(this.application, this)).get(LogViewModel::class.java)
         logViewModel.lastResult.observe(this, Observer<String> { lastResult ->
             run {
                 editText.append(lastResult)
@@ -50,6 +52,13 @@ class LogActivity : AppCompatActivity() {
         //this mean that the
         if(savedInstanceState == null)
             logViewModel.launchReadLog(rootDir())
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        if(::logViewModel.isInitialized)
+            logViewModel.saveState()
+
+        super.onSaveInstanceState(outState)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
