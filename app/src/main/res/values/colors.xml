@@ -8,4 +8,11 @@
     <color name="light_grey">#cfd8dc</color>
     <color name="dark_grey">#37474f</color>
     <color name="light">@android:color/background_light</color>
+
+    <!-- scanner -->
+    <color name="scan_mask">#60000000</color>
+    <color name="scan_dot">#ff6600</color>
+    <color name="scan_result_view">#b0000000</color>
+    <color name="scan_result_dots">#c099cc00</color>
+    <color name="whiteSecondary">#b3ffffff</color>
 </resources>
