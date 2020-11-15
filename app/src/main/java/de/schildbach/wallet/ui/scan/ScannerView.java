@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package scan;
+package de.schildbach.wallet.ui.scan;
 
 import android.content.Context;
 import android.content.res.Resources;

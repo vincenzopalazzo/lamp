@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -13,21 +14,29 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.google.zxing.Result
 import com.lvaccaro.lamp.R
+import de.schildbach.wallet.ui.scan.CameraManager
+import de.schildbach.wallet.ui.scan.ScannerView
 import me.dm7.barcodescanner.zxing.ZXingScannerView
 
-class ScanActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
-    private val TAG = "ScanActivity"
-    lateinit var mScannerView: ZXingScannerView
+
+class ScanActivity : AppCompatActivity(){
+
+    companion object {
+        private val TAG = "ScanActivity"
+        private const val AUTO_FOCUS_INTERVAL_MS = 2500L
+    }
+
+    private val cameraManager = CameraManager()
+    lateinit var mScannerView: ScannerView
 
     public override fun onCreate(state: Bundle?) {
         super.onCreate(state)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
 
-        mScannerView = ZXingScannerView(this)
+        this.mScannerView = findViewById(R.id.qrdecoderview)
         setContentView(mScannerView)
-        mScannerView.setAutoFocus(true)
-        mScannerView.setAspectTolerance(0.5f)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
             checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
@@ -39,18 +48,18 @@ class ScanActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
 
     public override fun onResume() {
         super.onResume()
-        mScannerView.setResultHandler(this) // Register ourselves as a handler for scan results.
-        mScannerView.startCamera()
+        /*mScannerView.setResultHandler(this) // Register ourselves as a handler for scan results.
+        mScannerView.startCamera()*/
     }
 
     public override fun onPause() {
         super.onPause()
-        mScannerView.stopCamera()
+        //mScannerView.stopCamera()
     }
 
     override fun onStop() {
         super.onStop()
-        mScannerView.stopCamera()
+        //mScannerView.stopCamera()
     }
 
     override fun onRequestPermissionsResult(
@@ -60,7 +69,7 @@ class ScanActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 101 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            mScannerView?.startCamera()
+            //mScannerView?.startCamera()
         }
     }
 
@@ -68,7 +77,7 @@ class ScanActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
         menuInflater.inflate(R.menu.menu_scan, menu)
         return true
     }
-
+/*
     override fun handleResult(rawResult: Result?) {
         Log.d(TAG, rawResult?.text)
         val result = rawResult?.text ?: ""
@@ -84,7 +93,7 @@ class ScanActivity : AppCompatActivity(), ZXingScannerView.ResultHandler {
             finish()
         }
     }
-
+*/
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
