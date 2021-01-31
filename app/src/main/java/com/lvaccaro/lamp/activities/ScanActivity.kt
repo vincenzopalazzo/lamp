@@ -8,51 +8,56 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import android.os.Handler
+import android.os.HandlerThread
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import com.google.zxing.Result
 import com.lvaccaro.lamp.R
 import de.schildbach.wallet.ui.scan.CameraManager
 import de.schildbach.wallet.ui.scan.ScannerView
-import me.dm7.barcodescanner.zxing.ZXingScannerView
+
+import android.os.Process.THREAD_PRIORITY_BACKGROUND
 
 
-class ScanActivity : AppCompatActivity(){
+class ScanActivity : AppCompatActivity() {
 
     companion object {
-        private val TAG = "ScanActivity"
+        private val TAG = this::class.java.canonicalName
         private const val AUTO_FOCUS_INTERVAL_MS = 2500L
     }
 
     private val cameraManager = CameraManager()
-    lateinit var mScannerView: ScannerView
+    private lateinit var mScannerView: ScannerView
+    private lateinit var cameraThread: HandlerThread
+    private lateinit var cameraHandler: Handler
 
-    public override fun onCreate(state: Bundle?) {
+    override fun onCreate(state: Bundle?) {
         super.onCreate(state)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
 
-        this.mScannerView = findViewById(R.id.qrdecoderview)
+        this.mScannerView = findViewById(R.id.qrcode_view)
         setContentView(mScannerView)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-            checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestPermissions((arrayOf(Manifest.permission.CAMERA)), 101)
-            return
+        cameraThread = HandlerThread(TAG, THREAD_PRIORITY_BACKGROUND)
+        cameraThread.start()
+        cameraHandler = Handler(cameraThread.looper)
+
+        val hashPermission = checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && hashPermission) {
+            requestPermissions(arrayOf(Manifest.permission.CAMERA), 101)
         }
     }
 
-    public override fun onResume() {
+    override fun onResume() {
         super.onResume()
         /*mScannerView.setResultHandler(this) // Register ourselves as a handler for scan results.
         mScannerView.startCamera()*/
     }
 
-    public override fun onPause() {
+    override fun onPause() {
         super.onPause()
         //mScannerView.stopCamera()
     }
@@ -63,9 +68,9 @@ class ScanActivity : AppCompatActivity(){
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+            requestCode: Int,
+            permissions: Array<out String>,
+            grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 101 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -77,23 +82,24 @@ class ScanActivity : AppCompatActivity(){
         menuInflater.inflate(R.menu.menu_scan, menu)
         return true
     }
-/*
-    override fun handleResult(rawResult: Result?) {
-        Log.d(TAG, rawResult?.text)
-        val result = rawResult?.text ?: ""
-        if (result.isEmpty()) {
-            mScannerView.resumeCameraPreview(this);
-            return
-        }
 
-        runOnUiThread {
-            val intent = intent
-            intent.putExtra("text", result)
-            setResult(Activity.RESULT_OK, intent)
-            finish()
+    /*
+        override fun handleResult(rawResult: Result?) {
+            Log.d(TAG, rawResult?.text)
+            val result = rawResult?.text ?: ""
+            if (result.isEmpty()) {
+                mScannerView.resumeCameraPreview(this);
+                return
+            }
+
+            runOnUiThread {
+                val intent = intent
+                intent.putExtra("text", result)
+                setResult(Activity.RESULT_OK, intent)
+                finish()
+            }
         }
-    }
-*/
+    */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {

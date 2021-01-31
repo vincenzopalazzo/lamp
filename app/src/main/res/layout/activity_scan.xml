@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     tools:context=".activities.ScanActivity">
 
-    <de.schildbach.wallet.ui.de.schildbach.wallet.ui.scan.ScannerView
-        android:id="@+id/qrdecoderview"
+    <de.schildbach.wallet.ui.scan.ScannerView
+        android:id="@+id/qrcode_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
